@@ -1,18 +1,21 @@
-name: Docker Image CI
+version: "3.8"
 
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
-jobs:
-
-  build:
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v4
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+services:
+  xray-proxy:
+    build: .
+    container_name: vortex03-xray
+    restart: unless-stopped
+    ports:
+      - "8080:8080"   # VLESS
+      - "8081:8081"   # VMess
+      - "8082:8082"   # Trojan
+      - "8083:8083"   # Shadowsocks
+    volumes:
+      - ./config.json:/etc/xray/config.json:ro
+    environment:
+      - TZ=Africa/Algiers
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
